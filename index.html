@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pay to Lixeror</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    .qr { text-align: center; margin-top: 20px; }
+    #timer { color: red; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Pay to Lixeror</h2>
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="tel" id="phone" placeholder="Your Phone Number" required />
+    <input type="number" id="amount" placeholder="Enter Amount" required />
+    <button onclick="generateQR()">Pay Now</button>
+
+    <div class="qr" id="qrSection" style="display:none;">
+      <p><strong>Scan to Pay:</strong></p>
+      <img id="qrImage" src="" alt="QR Code" />
+      <p id="timer">QR expires in: 15:00</p>
+      <input type="text" id="utr" placeholder="Enter UTR Number" />
+      <button onclick="sendWhatsApp()">Submit & Confirm</button>
+    </div>
+  </div>
+
+  <script>
+    let countdown;
+
+    function generateQR() {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const amount = document.getElementById("amount").value;
+
+      if (!name || !phone || !amount || amount <= 0) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const upiID = "7520221141@ptsbi";
+      const upiURL = `upi://pay?pa=${upiID}&pn=Lixeror&am=${amount}&cu=INR`;
+      const qrAPI = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upiURL)}&size=250x250`;
+
+      document.getElementById("qrImage").src = qrAPI;
+      document.getElementById("qrSection").style.display = "block";
+
+      startTimer(15 * 60);
+    }
+
+    function startTimer(duration) {
+      let timer = duration;
+      const display = document.getElementById("timer");
+
+      clearInterval(countdown);
+      countdown = setInterval(() => {
+        const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+        const seconds = String(timer % 60).padStart(2, '0');
+        display.textContent = `QR expires in: ${minutes}:${seconds}`;
+
+        if (--timer < 0) {
+          clearInterval(countdown);
+          display.textContent = "QR expired. Refresh the page to generate again.";
+        }
+      }, 1000);
+    }
+
+    function sendWhatsApp() {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const amount = document.getElementById("amount").value;
+      const utr = document.getElementById("utr").value;
+
+      if (!utr) {
+        alert("Please enter the UTR number.");
+        return;
+      }
+
+      const message = `Payment Confirmation:%0AName: ${name}%0APhone: ${phone}%0AAmount: ₹${amount}%0AUTR: ${utr}`;
+      const whatsappURL = `https://wa.me/917520221141?text=${message}`;
+
+      window.open(whatsappURL, "_blank");
+    }
+  </script>
+</body>
+</html>
